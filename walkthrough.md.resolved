@@ -1,0 +1,78 @@
+# Referee-GPT — สรุปผลงาน ✅
+
+แอปพลิเคชัน **Referee-GPT** สร้างเสร็จสมบูรณ์และทำงานได้ที่ `http://localhost:3000`
+
+---
+
+## หน้า Chat UI
+
+![หน้าหลัก Chat UI](C:\Users\kao\.gemini\antigravity\brain\b327db4e-0bcd-4910-932f-2ba054c4351d\main_chat_page_1772981020897.png)
+
+**ฟีเจอร์ที่ทำงานได้:**
+- ✅ รองรับภาษาไทยด้วยฟอนต์ Noto Sans Thai
+- ✅ ปุ่มตัวอย่างคำถาม 4 ข้อ
+- ✅ Typing indicator (จุดกระพริบ) ขณะรอ AI
+- ✅ Chat bubble animation
+
+---
+
+## AI Response + HITL + Source Ref
+
+![คำตอบจาก AI พร้อม Art 25 badge และปุ่ม HITL](C:\Users\kao\.gemini\antigravity\brain\b327db4e-0bcd-4910-932f-2ba054c4351d\final_chat_response_1772981110469.png)
+
+**ฟีเจอร์ที่ทำงานได้:**
+- ✅ AI ตอบเป็นภาษาไทย พร้อมอ้างอิง **Art 25** ทุกครั้ง
+- ✅ Badge อ้างอิงข้อกฎ (📖 Art 25) แสดงใต้คำตอบ
+- ✅ แสดง Latency ⚡ (ms) ของแต่ละคำตอบ
+- ✅ ปุ่ม 👍/👎 HITL อัปเดต `is_correct` ใน Supabase ทันที
+- ✅ Guardrail 🔴 แสดงเมื่อ confidence_score < 60%
+
+---
+
+## Dashboard KPI
+
+![Dashboard แสดง KPI cards + bar chart + logs table](C:\Users\kao\.gemini\antigravity\brain\b327db4e-0bcd-4910-932f-2ba054c4351d\dashboard_page_1772981047815.png)
+
+**ฟีเจอร์ที่ทำงานได้:**
+- ✅ **คำถามทั้งหมด**: 4 คำถาม
+- ✅ **เวลาตอบสนองเฉลี่ย**: 3.1s (3,114 ms)
+- ✅ **อัตราความแม่นยำ**: 100% (จาก HITL)
+- ✅ Bar chart latency 10 คำถามล่าสุด (Recharts)
+- ✅ ตาราง Q&A logs ครบ: source_ref, confidence%, latency, ผล 👍/👎
+- ✅ Auto-refresh ทุก 30 วินาที
+
+---
+
+## โครงสร้างโปรเจกต์
+
+```
+mini project ai/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── chat/route.ts      # Gemini API + Supabase insert
+│   │   │   └── feedback/route.ts  # HITL is_correct update
+│   │   ├── dashboard/page.tsx     # KPI + charts
+│   │   ├── layout.tsx             # Nav + Thai font
+│   │   ├── globals.css
+│   │   └── page.tsx               # Chat UI
+│   └── lib/
+│       ├── supabase.ts            # Supabase client
+│       └── rules.ts               # Load rules_context.txt
+├── rules_context.txt
+├── .env.local
+└── package.json
+```
+
+## การตรวจสอบที่ผ่านแล้ว
+
+| รายการ | สถานะ |
+|---|---|
+| Chat UI โหลดได้ | ✅ |
+| AI ตอบพร้อม source_ref (Art XX) | ✅ |
+| Latency วัดได้และแสดงผล | ✅ |
+| บันทึกลง Supabase qa_logs | ✅ |
+| ปุ่ม 👍/👎 อัปเดต is_correct | ✅ |
+| Dashboard แสดง KPI จาก Supabase | ✅ |
+| Recharts bar chart render | ✅ |
+| Guardrail warning (confidence < 60%) | ✅ |
