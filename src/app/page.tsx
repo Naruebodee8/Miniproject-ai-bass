@@ -21,7 +21,7 @@ type Session = {
 };
 
 const CONFIDENCE_THRESHOLD = 0.6;
-const STORAGE_KEY = "referee_gpt_sessions";
+const STORAGE_KEY = "mrzebra_sessions"; // เปลี่ยน Key ใน LocalStorage ให้เข้ากับชื่อใหม่ด้วย
 
 const EXAMPLE_QUESTIONS = [
     "กฎ Traveling คืออะไร และนับ Gather Step อย่างไร?",
@@ -33,7 +33,7 @@ const EXAMPLE_QUESTIONS = [
 const WELCOME_MESSAGE: Message = {
     role: "assistant",
     content:
-        "สวัสดีครับ! ผม Referee-GPT ผู้เชี่ยวชาญกฎบาสเกตบอล 🏀 ถามกฎข้อไหนก็ได้ครับ ผมจะตอบพร้อมอ้างอิงข้อกฎทุกครั้ง",
+        "สวัสดีครับ! ผม Mr.Zebra ผู้เชี่ยวชาญกฎบาสเกตบอล 🏀 ถามกฎข้อไหนก็ได้ครับ ผมจะตอบพร้อมอ้างอิงข้อกฎทุกครั้ง",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -154,7 +154,6 @@ export default function ChatPage() {
         setInput("");
         setIsLoading(true);
 
-        // Optimistically add user message & set title
         updateSession(currentId, (s) => ({
             ...s,
             title: s.title === "การสนทนาใหม่" ? question.slice(0, 40) : s.title,
@@ -186,7 +185,7 @@ export default function ChatPage() {
         } catch (err) {
             const errMsg =
                 String(err).includes("503") || String(err).includes("high demand")
-                    ? "⏳ Gemini API มีผู้ใช้งานสูงชั่วคราว กรุณาลองใหม่ใน 10 วินาทีครับ"
+                    ? "⏳ ระบบมีผู้ใช้งานสูงชั่วคราว กรุณาลองใหม่ใน 10 วินาทีครับ"
                     : "❌ เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้งครับ";
             updateSession(currentId, (s) => ({
                 ...s,
@@ -231,19 +230,20 @@ export default function ChatPage() {
 
     // ─── Render ───────────────────────────────────────────────────────────────
     return (
-        <div className="flex h-[calc(100vh-64px)] bg-slate-950">
+        <div className="flex h-[calc(100vh-64px)] bg-[#0B1325] font-sans">
             {/* ── Sidebar ─────────────────────────────────────────────────────── */}
             <aside
-                className={`flex-shrink-0 flex flex-col bg-slate-900 border-r border-slate-800 transition-all duration-300 overflow-hidden ${sidebarOpen ? "w-72" : "w-0"
-                    }`}
+                className={`flex-shrink-0 flex flex-col bg-[#111C38] border-r border-[#1D428A]/40 transition-all duration-300 overflow-hidden ${
+                    sidebarOpen ? "w-72" : "w-0"
+                }`}
             >
                 {/* Sidebar header */}
-                <div className="p-3 border-b border-slate-800 flex-shrink-0">
+                <div className="p-3 border-b border-[#1D428A]/40 flex-shrink-0">
                     <button
                         onClick={startNewChat}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-95"
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#FFC72C] hover:bg-[#FDB927] text-[#1D428A] text-sm font-bold shadow-sm transition-all duration-200 hover:scale-[1.02] active:scale-95"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                             <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
                         </svg>
                         การสนทนาใหม่
@@ -251,40 +251,41 @@ export default function ChatPage() {
                 </div>
 
                 {/* Session list */}
-                <div className="flex-1 overflow-y-auto py-2">
+                <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
                     {sessions.length === 0 ? (
-                        <p className="text-center text-slate-600 text-xs p-4">ยังไม่มีประวัติ</p>
+                        <p className="text-center text-blue-200/50 text-xs p-4">ยังไม่มีประวัติ</p>
                     ) : (
                         sessions.map((s) => (
                             <div
                                 key={s.id}
-                                className={`group relative mx-2 mb-1 rounded-xl overflow-hidden transition-all duration-200 ${s.id === currentId
-                                        ? "bg-slate-800 border border-slate-700/70"
-                                        : "hover:bg-slate-800/50 border border-transparent"
-                                    }`}
+                                className={`group relative mx-2 mb-1 rounded-xl overflow-hidden transition-all duration-200 ${
+                                    s.id === currentId
+                                        ? "bg-[#1D428A]/50 border border-[#1D428A]"
+                                        : "hover:bg-[#1D428A]/20 border border-transparent"
+                                }`}
                             >
                                 <button
                                     onClick={() => { setCurrentId(s.id); setDeleteConfirm(null); }}
                                     className="w-full text-left px-3 py-2.5 pr-9"
                                 >
-                                    <p className={`text-sm font-medium truncate leading-snug ${s.id === currentId ? "text-white" : "text-slate-300"}`}>
+                                    <p className={`text-sm font-medium truncate leading-snug ${s.id === currentId ? "text-[#FFC72C]" : "text-blue-100"}`}>
                                         🏀 {s.title}
                                     </p>
-                                    <p className="text-[11px] text-slate-500 mt-0.5">
+                                    <p className={`text-[11px] mt-0.5 ${s.id === currentId ? "text-blue-200" : "text-blue-300/60"}`}>
                                         {formatDate(s.created_at)} · {s.messages.length - 1} คำถาม
                                     </p>
                                 </button>
 
                                 {deleteConfirm === s.id ? (
                                     <div className="flex items-center gap-1 px-3 pb-2">
-                                        <span className="text-xs text-slate-400 flex-1">ลบเลย?</span>
+                                        <span className="text-xs text-blue-300/70 flex-1">ลบเลย?</span>
                                         <button onClick={() => deleteSession(s.id)} className="text-xs text-red-400 hover:text-red-300 font-semibold">ลบ</button>
-                                        <button onClick={() => setDeleteConfirm(null)} className="text-xs text-slate-500 hover:text-slate-300 ml-2">ยกเลิก</button>
+                                        <button onClick={() => setDeleteConfirm(null)} className="text-xs text-blue-300 hover:text-blue-100 ml-2">ยกเลิก</button>
                                     </div>
                                 ) : (
                                     <button
                                         onClick={(e) => { e.stopPropagation(); setDeleteConfirm(s.id); }}
-                                        className="absolute right-2 top-2.5 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-slate-500 hover:text-red-400 rounded"
+                                        className="absolute right-2 top-2.5 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-blue-300/50 hover:text-red-400 rounded"
                                         title="ลบการสนทนา"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
@@ -297,26 +298,26 @@ export default function ChatPage() {
                     )}
                 </div>
 
-                <div className="p-3 border-t border-slate-800 flex-shrink-0">
-                    <p className="text-center text-[11px] text-slate-600">{sessions.length} การสนทนา</p>
+                <div className="p-3 border-t border-[#1D428A]/40 flex-shrink-0">
+                    <p className="text-center text-[11px] text-blue-300/50">{sessions.length} การสนทนา</p>
                 </div>
             </aside>
 
             {/* ── Chat Area ────────────────────────────────────────────────────── */}
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Topbar */}
-                <div className="flex items-center px-4 py-2 border-b border-slate-800/60 flex-shrink-0">
+                <div className="flex items-center px-4 py-2 border-b border-[#1D428A]/40 bg-[#0B1325]/80 backdrop-blur-sm flex-shrink-0 z-10">
                     <button
                         onClick={() => setSidebarOpen((v) => !v)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-all duration-200"
+                        className="p-1.5 rounded-lg text-blue-300 hover:text-[#FFC72C] hover:bg-[#1D428A]/30 transition-all duration-200"
                         title={sidebarOpen ? "ซ่อนประวัติ" : "แสดงประวัติ"}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                             <path fillRule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z" clipRule="evenodd" />
                         </svg>
                     </button>
                     {currentSession && (
-                        <span className="ml-3 text-sm text-slate-400 truncate">{currentSession.title}</span>
+                        <span className="ml-3 text-sm font-medium text-[#FFC72C] truncate drop-shadow-sm">{currentSession.title}</span>
                     )}
                 </div>
 
@@ -328,16 +329,18 @@ export default function ChatPage() {
                                 key={i}
                                 className={`message-enter flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
                             >
-                                <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-lg ${msg.role === "user" ? "bg-orange-500 text-white" : "bg-slate-700 text-white"
-                                    }`}>
-                                    {msg.role === "user" ? "👤" : "🏀"}
+                                <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-lg shadow-md ${
+                                    msg.role === "user" ? "bg-[#FFC72C] text-[#1D428A]" : "bg-[#1D428A] text-[#FFC72C] border border-[#FFC72C]/20"
+                                }`}>
+                                    {msg.role === "user" ? "👤" : "🦓"}
                                 </div>
 
                                 <div className={`max-w-[80%] flex flex-col gap-2 ${msg.role === "user" ? "items-end" : "items-start"}`}>
-                                    <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${msg.role === "user"
-                                            ? "bg-orange-500 text-white rounded-tr-sm"
-                                            : "bg-slate-800 text-slate-100 rounded-tl-sm border border-slate-700/50"
-                                        }`}>
+                                    <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                                        msg.role === "user"
+                                            ? "bg-[#FFC72C] text-[#0B1325] rounded-tr-sm font-medium"
+                                            : "bg-[#111C38] text-blue-50 rounded-tl-sm border border-[#1D428A]/60"
+                                    }`}>
                                         {msg.content}
                                     </div>
 
@@ -345,45 +348,45 @@ export default function ChatPage() {
                                         <div className="flex flex-col gap-2 w-full">
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 {msg.source_ref && (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#1D428A]/40 text-blue-200 border border-[#1D428A]">
                                                         📖 {msg.source_ref}
                                                     </span>
                                                 )}
                                                 {msg.latency_ms && (
-                                                    <span className="text-xs text-slate-500">⚡ {msg.latency_ms.toLocaleString()} ms</span>
+                                                    <span className="text-xs text-blue-300/50">⚡ {msg.latency_ms.toLocaleString()} ms</span>
                                                 )}
                                             </div>
 
                                             {msg.confidence_score !== undefined && msg.confidence_score < CONFIDENCE_THRESHOLD && (
-                                                <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+                                                <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-300 text-xs">
                                                     <span className="text-base">⚠️</span>
                                                     <div>
-                                                        <p className="font-semibold">ความมั่นใจต่ำ</p>
-                                                        <p className="text-red-400/80">
+                                                        <p className="font-semibold text-orange-200">ความมั่นใจต่ำ</p>
+                                                        <p className="text-orange-300/80">
                                                             AI ไม่มั่นใจในคำตอบนี้ (Confidence: {(msg.confidence_score * 100).toFixed(0)}%) กรุณาตรวจสอบกับคู่มืออย่างเป็นทางการด้วย
                                                         </p>
                                                     </div>
                                                 </div>
                                             )}
 
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs text-slate-500">คำตอบถูกต้องไหม?</span>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="text-xs text-blue-300/60">คำตอบถูกต้องไหม?</span>
                                                 <button
                                                     onClick={() => msg.feedback === null ? handleFeedback(i, msg.id!, true) : undefined}
                                                     disabled={msg.feedback !== null && msg.feedback !== undefined}
-                                                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-all duration-200
-                            ${msg.feedback === "up" ? "bg-green-500 scale-110" : "bg-slate-700 hover:bg-green-500/30 hover:scale-110"}
-                            ${msg.feedback !== null && msg.feedback !== undefined ? "cursor-default" : "cursor-pointer"}`}
+                                                    className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm transition-all duration-200
+                                                    ${msg.feedback === "up" ? "bg-green-500/80 text-white scale-110" : "bg-[#1D428A]/50 text-blue-200 hover:bg-green-500/40 hover:scale-110"}
+                                                    ${msg.feedback !== null && msg.feedback !== undefined ? "cursor-default" : "cursor-pointer"}`}
                                                 >👍</button>
                                                 <button
                                                     onClick={() => msg.feedback === null ? handleFeedback(i, msg.id!, false) : undefined}
                                                     disabled={msg.feedback !== null && msg.feedback !== undefined}
-                                                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-all duration-200
-                            ${msg.feedback === "down" ? "bg-red-500 scale-110" : "bg-slate-700 hover:bg-red-500/30 hover:scale-110"}
-                            ${msg.feedback !== null && msg.feedback !== undefined ? "cursor-default" : "cursor-pointer"}`}
+                                                    className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm transition-all duration-200
+                                                    ${msg.feedback === "down" ? "bg-red-500/80 text-white scale-110" : "bg-[#1D428A]/50 text-blue-200 hover:bg-red-500/40 hover:scale-110"}
+                                                    ${msg.feedback !== null && msg.feedback !== undefined ? "cursor-default" : "cursor-pointer"}`}
                                                 >👎</button>
                                                 {msg.feedback && (
-                                                    <span className="text-xs text-slate-500">
+                                                    <span className="text-xs text-[#FFC72C]">
                                                         {msg.feedback === "up" ? "✅ บันทึกแล้ว" : "❌ บันทึกแล้ว"}
                                                     </span>
                                                 )}
@@ -396,11 +399,11 @@ export default function ChatPage() {
 
                         {isLoading && (
                             <div className="message-enter flex gap-3">
-                                <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-lg">🏀</div>
-                                <div className="bg-slate-800 border border-slate-700/50 px-4 py-3 rounded-2xl rounded-tl-sm flex items-center gap-1.5">
-                                    <span className="typing-dot w-2 h-2 rounded-full bg-orange-400 inline-block"></span>
-                                    <span className="typing-dot w-2 h-2 rounded-full bg-orange-400 inline-block"></span>
-                                    <span className="typing-dot w-2 h-2 rounded-full bg-orange-400 inline-block"></span>
+                                <div className="w-9 h-9 rounded-full bg-[#1D428A] flex items-center justify-center text-lg border border-[#FFC72C]/20 shadow-md">🦓</div>
+                                <div className="bg-[#111C38] border border-[#1D428A]/60 px-4 py-3 rounded-2xl rounded-tl-sm flex items-center gap-1.5 shadow-sm">
+                                    <span className="typing-dot w-2 h-2 rounded-full bg-[#FFC72C] inline-block"></span>
+                                    <span className="typing-dot w-2 h-2 rounded-full bg-[#FFC72C] inline-block delay-75"></span>
+                                    <span className="typing-dot w-2 h-2 rounded-full bg-[#FFC72C] inline-block delay-150"></span>
                                 </div>
                             </div>
                         )}
@@ -411,13 +414,13 @@ export default function ChatPage() {
                 {/* Example questions (new chat only) */}
                 {messages.length <= 1 && (
                     <div className="max-w-3xl mx-auto px-4 pb-2 w-full">
-                        <p className="text-xs text-slate-500 mb-2">ตัวอย่างคำถาม:</p>
+                        <p className="text-xs text-blue-300/70 mb-2 font-medium">ตัวอย่างคำถาม:</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {EXAMPLE_QUESTIONS.map((q) => (
                                 <button
                                     key={q}
                                     onClick={() => sendMessage(q)}
-                                    className="text-left px-3 py-2 rounded-xl text-xs text-slate-300 bg-slate-800/60 border border-slate-700/50 hover:border-orange-500/50 hover:bg-slate-700/60 transition-all duration-200"
+                                    className="text-left px-3 py-2.5 rounded-xl text-xs text-blue-100 bg-[#111C38]/80 border border-[#1D428A]/50 hover:border-[#FFC72C]/70 hover:bg-[#1D428A]/40 transition-all duration-200 shadow-sm"
                                 >
                                     {q}
                                 </button>
@@ -427,9 +430,9 @@ export default function ChatPage() {
                 )}
 
                 {/* Input */}
-                <div className="border-t border-slate-800 bg-slate-950/80 backdrop-blur-sm flex-shrink-0">
+                <div className="border-t border-[#1D428A]/40 bg-[#0B1325]/90 backdrop-blur-md flex-shrink-0 z-10">
                     <div className="max-w-3xl mx-auto px-4 py-4">
-                        <div className="flex items-end gap-3 bg-slate-800 border border-slate-700/50 rounded-2xl px-4 py-3 focus-within:border-orange-500/50 transition-colors duration-200">
+                        <div className="flex items-end gap-3 bg-[#111C38] border border-[#1D428A] rounded-2xl px-4 py-3 focus-within:border-[#FFC72C] focus-within:ring-1 focus-within:ring-[#FFC72C]/50 transition-all duration-200 shadow-inner">
                             <textarea
                                 ref={inputRef}
                                 value={input}
@@ -437,22 +440,22 @@ export default function ChatPage() {
                                 onKeyDown={handleKeyDown}
                                 placeholder="พิมพ์คำถามเกี่ยวกับกฎบาสเกตบอล... (Enter เพื่อส่ง)"
                                 rows={1}
-                                className="flex-1 bg-transparent text-slate-100 placeholder-slate-500 text-sm resize-none outline-none max-h-32 leading-relaxed"
+                                className="flex-1 bg-transparent text-blue-50 placeholder-blue-300/40 text-sm resize-none outline-none max-h-32 leading-relaxed"
                                 style={{ scrollbarWidth: "none" }}
                                 disabled={isLoading}
                             />
                             <button
                                 onClick={() => sendMessage(input)}
                                 disabled={!input.trim() || isLoading}
-                                className="flex-shrink-0 w-9 h-9 rounded-xl bg-orange-500 hover:bg-orange-400 disabled:bg-slate-700 disabled:cursor-not-allowed flex items-center justify-center text-white transition-all duration-200 hover:scale-105 active:scale-95"
+                                className="flex-shrink-0 w-9 h-9 rounded-xl bg-[#FFC72C] hover:bg-[#FDB927] disabled:bg-[#1D428A]/50 disabled:text-blue-300/30 disabled:cursor-not-allowed flex items-center justify-center text-[#1D428A] transition-all duration-200 hover:scale-105 active:scale-95 shadow-md"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                                     <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
                                 </svg>
                             </button>
                         </div>
-                        <p className="text-center text-xs text-slate-600 mt-2">
-                            Referee-GPT อ้างอิงจากกฎบาสเกตบอล FIBA อย่างเป็นทางการ
+                        <p className="text-center text-xs text-blue-300/50 mt-2">
+                            Mr.Zebra อ้างอิงจากกฎบาสเกตบอล FIBA อย่างเป็นทางการ
                         </p>
                     </div>
                 </div>
