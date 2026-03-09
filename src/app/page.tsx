@@ -20,7 +20,8 @@ type Session = {
     messages: Message[];
 };
 
-const STORAGE_KEY = "mrzebra_sessions_gs_thai";
+const STORAGE_KEY = "mrzebra_sessions_gs_pill_colors"; // 🛡️ เปลี่ยนคีย์เพื่อแยกข้อมูล
+const CONFIDENCE_THRESHOLD = 0.6; // เกณฑ์ความมั่นใจที่ 60%
 
 const EXAMPLE_QUESTIONS = [
     "กฎ Traveling คืออะไร และนับ Gather Step อย่างไร?",
@@ -69,8 +70,9 @@ export default function ChatPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(true);
     
-    // ── 🌟 State สำหรับ Navigation ──
+    // ── 🌟 States ──
     const [activeTab, setActiveTab] = useState<"chat" | "dashboard">("chat");
+    const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -115,7 +117,45 @@ export default function ChatPage() {
         setCurrentId(s.id);
         setInput("");
         setActiveTab("chat");
+        setDeleteConfirm(null);
         setTimeout(() => inputRef.current?.focus(), 100);
+    };
+
+    // ── ฟังก์ชันลบแชท ──
+    const deleteSession = (id: string) => {
+        setSessions((prev) => {
+            const next = prev.filter((s) => s.id !== id);
+            if (next.length === 0) {
+                const fresh = createSession();
+                saveSessions([fresh]);
+                setCurrentId(fresh.id);
+                return [fresh];
+            }
+            saveSessions(next);
+            if (currentId === id) setCurrentId(next[0].id);
+            return next;
+        });
+        setDeleteConfirm(null);
+    };
+
+    // ── ฟังก์ชันจัดการ Feedback ──
+    const handleFeedback = async (msgIndex: number, id: string, is_correct: boolean) => {
+        updateSession(currentId, (s) => ({
+            ...s,
+            messages: s.messages.map((m, i) =>
+                i === msgIndex ? { ...m, feedback: is_correct ? "up" : "down" } : m
+            ),
+        }));
+
+        try {
+            await fetch("/api/feedback", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, is_correct }),
+            });
+        } catch (err) {
+            console.error("Feedback error:", err);
+        }
     };
 
     const sendMessage = async (question: string) => {
@@ -175,13 +215,14 @@ export default function ChatPage() {
                 <div className="flex-1 overflow-y-auto px-4 space-y-2 custom-scrollbar">
                     <p className="px-3 text-[11px] text-[#FFC72C]/70 font-bold mb-2">ประวัติการพูดคุย</p>
                     {sessions.map((s) => (
-                        <div key={s.id} className="relative">
+                        <div key={s.id} className="relative group">
                             <button
                                 onClick={() => { 
                                     setCurrentId(s.id); 
                                     setActiveTab("chat");
+                                    setDeleteConfirm(null);
                                 }}
-                                className={`w-full text-left p-4 rounded-xl transition-all border ${
+                                className={`w-full text-left p-4 pr-12 rounded-xl transition-all border ${
                                     s.id === currentId && activeTab === "chat"
                                     ? "bg-[#264f9c] border-[#FFC72C]/50 shadow-md" 
                                     : "border-transparent hover:bg-[#264f9c]/50"
@@ -190,6 +231,34 @@ export default function ChatPage() {
                                 <p className={`text-sm font-bold truncate ${s.id === currentId && activeTab === "chat" ? "text-[#FFC72C]" : "text-white/70"}`}>🏀 {s.title}</p>
                                 <p className="text-[10px] text-white/40 mt-1 font-mono">{formatDate(s.created_at)}</p>
                             </button>
+                            
+                            {/* ── ส่วนปุ่มลบแชท ── */}
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20">
+                                {deleteConfirm === s.id ? (
+                                    <div className="flex items-center gap-1 bg-[#1D428A] border border-red-500 rounded-lg p-1 animate-in fade-in zoom-in">
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); deleteSession(s.id); }} 
+                                            className="text-[10px] bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors"
+                                        >
+                                            ลบ
+                                        </button>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); setDeleteConfirm(null); }} 
+                                            className="text-[10px] text-white/70 hover:text-white px-1"
+                                        >
+                                            X
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); setDeleteConfirm(s.id); }}
+                                        className="p-2 text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all"
+                                        title="ลบแชท"
+                                    >
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" /></svg>
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -254,7 +323,7 @@ export default function ChatPage() {
                                             }`}>
                                                 {msg.role === "user" ? "🏀" : "🦓"}
                                             </div>
-                                            <div className={`space-y-1 ${msg.role === "user" ? "items-end" : "items-start"}`}>
+                                            <div className={`space-y-2 ${msg.role === "user" ? "items-end" : "items-start"}`}>
                                                 <div className={`px-5 py-3 rounded-2xl text-[15px] shadow-sm font-medium ${
                                                     msg.role === "user" 
                                                     ? "bg-[#1D428A] text-white rounded-tr-none" 
@@ -262,8 +331,57 @@ export default function ChatPage() {
                                                 }`}>
                                                     {msg.content}
                                                 </div>
-                                                {msg.source_ref && (
-                                                    <span className="text-[10px] font-bold text-[#1D428A]/50 px-2">อ้างอิง: {msg.source_ref}</span>
+                                                
+                                                {/* 🛡️ Guardrail 1: Confidence UI */}
+                                                {msg.role === "assistant" && msg.confidence_score !== undefined && msg.confidence_score < CONFIDENCE_THRESHOLD && (
+                                                    <div className="flex items-start gap-2 bg-red-100 border border-red-300 px-4 py-3 rounded-xl max-w-sm shadow-sm">
+                                                        <span className="text-xl">⚠️</span>
+                                                        <div>
+                                                            <p className="text-xs font-black text-red-700">คำเตือน: AI ไม่มั่นใจในคำตอบนี้</p>
+                                                            <p className="text-[11px] text-red-600 mt-0.5 leading-tight">
+                                                                (Confidence: {(msg.confidence_score * 100).toFixed(0)}%) อาจมีข้อมูลที่คลาดเคลื่อน โปรดตรวจสอบจากกติกาอ้างอิงของ FIBA เพื่อความถูกต้องอีกครั้ง
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* ส่วน Reference และ Feedback */}
+                                                {msg.role === "assistant" && (
+                                                    <div className="flex flex-wrap items-center gap-3 px-2 pt-1">
+                                                        {msg.source_ref && (
+                                                            <span className="text-[10px] font-bold text-[#1D428A]/50">อ้างอิง: {msg.source_ref}</span>
+                                                        )}
+                                                        
+                                                        {msg.id && (
+                                                            <div className="flex items-center gap-1.5 ml-auto">
+                                                                <button
+                                                                    onClick={() => msg.feedback === null ? handleFeedback(i, msg.id!, true) : undefined}
+                                                                    disabled={msg.feedback !== null}
+                                                                    className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm transition-all
+                                                                        ${msg.feedback === "up" ? "bg-green-500 text-white" : "bg-slate-200 text-slate-400 hover:bg-green-500 hover:text-white"}
+                                                                        ${msg.feedback !== null ? "cursor-default" : "cursor-pointer"}
+                                                                    `}
+                                                                    title="คำตอบดี"
+                                                                >
+                                                                    👍
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => msg.feedback === null ? handleFeedback(i, msg.id!, false) : undefined}
+                                                                    disabled={msg.feedback !== null}
+                                                                    className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm transition-all
+                                                                        ${msg.feedback === "down" ? "bg-red-500 text-white" : "bg-slate-200 text-slate-400 hover:bg-red-500 hover:text-white"}
+                                                                        ${msg.feedback !== null ? "cursor-default" : "cursor-pointer"}
+                                                                    `}
+                                                                    title="คำตอบไม่ดี"
+                                                                >
+                                                                    👎
+                                                                </button>
+                                                                {msg.feedback && (
+                                                                    <span className="text-[10px] text-[#1D428A]/50 ml-1">ขอบคุณสำหรับคำติชม</span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
@@ -304,9 +422,20 @@ export default function ChatPage() {
                                         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg>
                                     </button>
                                 </div>
-                                <div className="flex justify-between items-center mt-4 px-2">
-                                    <p className="text-[11px] text-[#1D428A]/50 font-bold">บอทผู้ช่วย Mr.Zebra อย่างเป็นทางการ</p>
-                                    <p className="text-[11px] text-[#1D428A]/50 font-bold">อ้างอิงกฎ FIBA ล่าสุด</p>
+                                
+                                {/* 🛡️ Guardrail 2: Scope Limitation Disclaimer & New Style 🛡️ */}
+                                <div className="flex justify-between items-center mt-4 px-2 relative">
+                                    {/* 🚨 ใหม่: ปรับสไตล์กล่องคำเตือนตามภาพอ้างอิง 🚨 */}
+                                    <div className="flex items-center gap-1.5 bg-white text-slate-800 px-3 py-1 rounded-full border border-slate-300 shadow-sm relative z-10">
+                                        {/* ไอคอน 'i' (ข้อมูล) */}
+                                        <svg className="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                        </svg>
+                                        <p className="text-[10px] font-black uppercase text-slate-600">
+                                            ถูกจำกัดให้ตอบเฉพาะเรื่องกบาสเกตบอลเท่านั้น
+                                        </p>
+                                    </div>
+                                    <p className="text-[11px] text-[#1D428A]/50 font-bold ml-auto relative z-10">Mr.Zebra (FIBA Rules Engine)</p>
                                 </div>
                             </div>
                         </div>
