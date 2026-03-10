@@ -1,25 +1,26 @@
 import type { Metadata } from "next";
-import { Noto_Sans_Thai } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import Link from "next/link";
 
-const notoSansThai = Noto_Sans_Thai({
-    subsets: ["thai", "latin"],
-    weight: ["300", "400", "500", "600", "700"],
-    variable: "--font-noto-thai",
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+<<<<<<< HEAD
     title: "Mr.ZebraBKB | ระบบถาม-ตอบกฎบาสเกตบอล",
     description:
         "ระบบ AI อัจฉริยะสำหรับถามตอบกฎบาสเกตบอลอย่างเป็นทางการ พร้อมอ้างอิงข้อกฎ",
+=======
+  title: "Mr.Zebra - Basketball Referee AI",
+  description: "ผู้เชี่ยวชาญกฎบาสเกตบอล FIBA",
+>>>>>>> aeee20800e2563f129abe32055dd65e7c440903d
 };
 
 export default function RootLayout({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
+<<<<<<< HEAD
     return (
         <html lang="th">
             <body className={`${notoSansThai.variable} font-sans antialiased bg-slate-50 text-slate-800 selection:bg-sky-200 selection:text-sky-900`}>
@@ -56,3 +57,11 @@ export default function RootLayout({
         </html>
     );
 }
+=======
+  return (
+    <html lang="th">
+      <body className={inter.className}>{children}</body>
+    </html>
+  );
+}
+>>>>>>> aeee20800e2563f129abe32055dd65e7c440903d
