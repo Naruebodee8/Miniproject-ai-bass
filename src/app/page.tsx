@@ -9,6 +9,7 @@ type Message = {
     content: string;
     id?: string;
     source_ref?: string;
+    source_content?: string | null;
     confidence_score?: number;
     latency_ms?: number;
     feedback?: "up" | "down" | null;
@@ -176,6 +177,7 @@ export default function ChatPage() {
                 content: data.answer,
                 id: data.id,
                 source_ref: data.source_ref,
+                source_content: data.source_content ?? null,
                 confidence_score: data.confidence_score,
                 latency_ms: data.latency_ms,
                 feedback: null,
@@ -345,13 +347,26 @@ export default function ChatPage() {
                                         </div>
                                     )}
 
-                                    {/* Source ref & feedback */}
+                                    {/* Source ref badge with tooltip */}
                                     {msg.role === "assistant" && (
                                         <div className="flex flex-wrap items-center gap-2 px-1">
                                             {msg.source_ref && (
-                                                <span className="text-[11px] text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded-full">
-                                                    📖 {msg.source_ref}
-                                                </span>
+                                                <div className="relative inline-block group/tooltip">
+                                                    <span className="text-[11px] text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded-full cursor-help hover:border-sky-300 hover:text-sky-600 transition-colors">
+                                                        📖 {msg.source_ref}
+                                                    </span>
+                                                    {/* Tooltip box */}
+                                                    <div className="absolute bottom-full left-0 mb-2 z-50 w-72 max-w-xs pointer-events-none opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200">
+                                                        <div className="bg-slate-800 text-white text-xs rounded-xl px-4 py-3 shadow-xl leading-relaxed whitespace-pre-wrap">
+                                                            <p className="font-bold text-sky-300 mb-1.5 text-[11px] uppercase tracking-wider">📋 {msg.source_ref}</p>
+                                                            <p className="text-slate-200 text-[11px] leading-relaxed">
+                                                                {msg.source_content ?? "ดูรายละเอียดเพิ่มเติมได้ที่คู่มือ FIBA ฉบับเต็ม"}
+                                                            </p>
+                                                        </div>
+                                                        {/* Arrow */}
+                                                        <div className="w-2.5 h-2.5 bg-slate-800 rotate-45 ml-3 -mt-1.5"></div>
+                                                    </div>
+                                                </div>
                                             )}
                                             {msg.id && (
                                                 <div className="flex items-center gap-1 ml-auto">
