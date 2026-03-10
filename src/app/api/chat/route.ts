@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         const start = Date.now();
 
 
-        const prompt = `คุณคือ "Referee-GPT" ผู้เชี่ยวชาญกฎกีฬาบาสเกตบอลอย่างเป็นทางการ
+        const prompt = `คุณคือ "Mr.ZebraBKB" ผู้เชี่ยวชาญกฎกีฬาบาสเกตบอลอย่างเป็นทางการ
 ตอบคำถามเป็นภาษาไทยเสมอ และต้องอ้างอิงข้ออย่างชัดเจน (เช่น Art 25, Art 33) ทุกครั้งในคำตอบ
 
 กฎบาสเกตบอล (Knowledge Base):
