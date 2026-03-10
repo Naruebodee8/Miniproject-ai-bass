@@ -23,10 +23,8 @@
 ### 1. Clone repo
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/referee-gpt.git
-cd referee-gpt
+git clone https://github.com/Naruebodee8/Miniproject-ai-bass
 ```
-
 ### 2. ติดตั้ง dependencies
 
 ```bash
@@ -62,9 +60,7 @@ CREATE TABLE qa_logs (
 ```bash
 npm run dev
 ```
-
-เปิด [http://localhost:3000](http://localhost:3000)
-
+หรือ //https://miniproject-ai-bass-e8bl.vercel.app/
 ## หน้าต่างๆ
 
 | URL | หน้า |
