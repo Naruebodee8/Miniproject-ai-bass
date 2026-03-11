@@ -60,7 +60,7 @@ CREATE TABLE qa_logs (
 ```bash
 npm run dev
 ```
-หรือ //https://miniproject-ai-bass-e8bl.vercel.app/
+หรือเข้าชมงานได้ที่นี่: https://miniproject-ai-bass-831o.vercel.app/
 ## หน้าต่างๆ
 
 | URL | หน้า |
